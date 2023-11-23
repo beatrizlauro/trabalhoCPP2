@@ -45,10 +45,11 @@ struct associado {
 struct dependente {
     string codigo_dependente;
     string codigo_associado;
+     string codigo_externo;
     string nome_dependente;
     int cpf;
     char sexo;
-    string codExterno(int ano, int codigo);
+     static string codExterno(int ano, int codigo);
     static int contadorDependentes;
 };
 
@@ -242,10 +243,6 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
             getline(cin, cad_dependente[i].nome_dependente);
             arquivo << "Nome: " << cad_dependente[i].nome_dependente << "\n";
 
-            cad_dependente[i].codigo_associado = "D" + to_string(a);
-            cout << "\nCódigo do associado: " << cad_dependente[i].codigo_associado << endl;
-            arquivo << "Código do associado: " << cad_dependente[i].codigo_associado << "\n";
-
             cad_dependente[i].cpf = cpfAssociado;
 
             cout << "\nData de nascimento:\nDia: ";
@@ -264,10 +261,15 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
             // Inserir l gica para gerar o c digo externo
             int anoAssociacao=2023; // Coloque o ano de associa  o desejado
             cad_dependente[i].codigo_dependente = "D" + to_string(dependente::contadorDependentes);
-            cout << "\nCódigo externo do dependente: " << cad_dependente[i].codigo_dependente << endl;
+           cad_dependente[i].codigo_externo = dependente::codExterno(2023, dependente::contadorDependentes);
+
+           cout << "\nCódigo do dependente: " <<  cad_dependente[i].codigo_dependente << endl;
+           cout << "\nCódigo externo do dependente: " << cad_dependente[i].codigo_externo << endl;
+
 
             cout << "Dependente cadastrado com sucesso!" << endl;
             arquivo << "Código do dependente: " << cad_dependente[i].codigo_dependente << "\n";
+            arquivo << "Código externo do dependente: " << cad_dependente[i].codigo_externo << "\n";
             arquivo << "============================================\n";
 
             a++;
@@ -340,8 +342,9 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
 }
 
 string dependente::codExterno(int ano, int codigo) {
-    return to_string(ano) + to_string(codigo);
+    return to_string(ano) + "-" + to_string(codigo);
 }
+
 
 string visitante::codExterno(int ano, int codigo) {
     return to_string(ano) + to_string(codigo);
