@@ -45,11 +45,11 @@ struct associado {
 struct dependente {
     string codigo_dependente;
     string codigo_associado;
-     string codigo_externo;
+    string codigo_externo;
     string nome_dependente;
     int cpf;
     char sexo;
-     static string codExterno(int ano, int codigo);
+    static string codExterno(int ano, int codigo);
     static int contadorDependentes;
 };
 
@@ -91,6 +91,8 @@ int buscarAssociadoPorCPF(associado cad_assos[], int tamanho, int cpf) {
 void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a);
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho);
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho);
+void relatorioDependente(const string& depCadastrados);
+void relatorioVisitante(const string& visCadastrados);
 
     int associado::contadorAssociados = 1;
     int dependente::contadorDependentes = 1;
@@ -132,11 +134,29 @@ int main() {
             case 1:
                 cadastroPessoa(cad_pessoa, cad_end, nascimento, cad_assos, i, a);
             break;
+
             case 2:
                 cadastroDependente(cad_dependente, dat_nasc_dependente, i, a, cad_assos, 100);
             break;
+
             case 3:
                 cadastroVisitante(cad_visitante, i, a, cad_assos, 100);
+            break;
+
+            case 4:
+
+            break;
+
+            case 5:
+
+            break;
+
+            case 6:
+                relatorioDependente("Dependentes_Cadastrados.txt");
+            break;
+
+            case 7:
+                relatorioVisitante("Visitantes_Cadastrados.txt");
             break;
         }
 
@@ -348,4 +368,36 @@ string dependente::codExterno(int ano, int codigo) {
 
 string visitante::codExterno(int ano, int codigo) {
     return to_string(ano) + to_string(codigo);
+}
+
+void relatorioDependente(const string& depCadastrados){
+    fstream arquivoDependente;
+    arquivoDependente.open("Dependentes_Cadastrados.txt", ios::in);
+    string linha;
+
+	if(arquivoDependente.is_open()){
+        cout << "\nRELATÓRIO DE DEPENDENTES:\n\n";
+        while(getline(arquivoDependente, linha)){
+            cout << linha << endl;
+        }
+        arquivoDependente.close();
+    }else{
+        cout << "Não foi possível abrir o arquivo." << endl;
+    }
+}
+
+void relatorioVisitante(const string& visCadastrados){
+    fstream arquivoVisitantes;
+    arquivoVisitantes.open("Visitantes_Cadastrados.txt", ios::in);
+    string linha;
+
+	if(arquivoVisitantes.is_open()){
+        cout << "\nRELATÓRIO DE VISITANTES:\n\n";
+        while(getline(arquivoVisitantes, linha)){
+            cout << linha << endl;
+        }
+        arquivoVisitantes.close();
+    }else{
+        cout << "Não foi possível abrir o arquivo." << endl;
+    }
 }
