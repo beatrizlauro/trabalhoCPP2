@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <locale.h>
+#include <ctime>
 
 using namespace std;
 
@@ -88,9 +89,19 @@ int buscarAssociadoPorCPF(associado cad_assos[], int tamanho, int cpf) {
     return -1; // Retorna -1 se o associado n o for encontrado
 }
 
+int buscarDependentePorCPF(dependente cad_dependente[], int tamanho, int cpf) {
+    for (int j = 0; j < tamanho; j++) {
+        if (cad_dependente[j].cpf == cpf) {
+            return j; // Retorna o índice do dependente se encontrado
+        }
+    }
+    return -1; // Retorna -1 se o dependente não for encontrado
+}
+
 void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a);
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho);
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho);
+void isOlder(dependente cad_dependente[], int tamanho);
 void relatorioDependente(const string& depCadastrados);
 void relatorioVisitante(const string& visCadastrados);
 
@@ -144,7 +155,7 @@ int main() {
             break;
 
             case 4:
-
+                isOlder(cad_dependente, tamanho);
             break;
 
             case 5:
@@ -369,6 +380,80 @@ string dependente::codExterno(int ano, int codigo) {
 string visitante::codExterno(int ano, int codigo) {
     return to_string(ano) + to_string(codigo);
 }
+
+void isOlder(dependente cad_dependente[], int tamanho){
+    fstream arquivo;
+    arquivo.open("Dependentes_Cadastrados.txt", fstream::in | fstream::out | fstream::app);
+
+    if (arquivo.is_open()) {
+        cout << "Consulta de Maioridade\n\nCPF do dependente: ";
+        int cpfDependente;
+        cin >> cpfDependente;
+
+        // Verifica se o associado com o CPF informado existe
+        int indexDependente = buscarDependentePorCPF(cad_dependente, tamanho, cpfDependente);
+
+            if (indexDependente != -1) {
+                int i = indexDependente;
+                int op;
+                do {
+                dependente dependente = cad_dependente[indexDependente];   
+
+                // Leitura da data de nascimento do arquivo
+                arquivo.seekg(0, ios::beg);
+                string linha;
+                while (getline(arquivo, linha)) {
+                    // Supondo que cada linha no arquivo tenha o formato "CPF: xxx, DataNascimento: dd/mm/aaaa"
+                    size_t pos = linha.find("DataNascimento:");
+                    if (pos != string::npos) {
+                        sscanf(linha.c_str() + pos, "DataNascimento: %d/%d/%d", &dependente.dat_nasc_dependente.dia, &dependente.dat_nasc_dependente.mes, &dependente.dat_nasc_dependente.ano);
+                        break;
+                    }
+                }         
+
+                struct tm *data_atual;
+                time_t agora;
+
+                int dia = dat_nasc_dependente[i].dia;
+                int mes = dat_nasc_dependente[i].mes;
+                int ano = dat_nasc_dependente[i].ano;
+
+
+                time(&agora);
+                data_atual = localtime(&agora);
+                int dia_atual = data_atual->tm_mday;
+                int mes_atual = data_atual->tm_mon + 1; // janeiro corresponde a 0
+                int ano_atual = data_atual->tm_year + 1900;
+
+                int idade = ano_atual - ano; //mudar caso altere a estrutura ao puxar o aniversário do dependente
+                int new_age;
+
+                if (mes > mes_atual || (mes == mes_atual && dia > dia_atual)) {
+                    new_age = idade - 1;
+                    if(new_age <= 18){
+			            cout << "Dependente atingiu a maioridade!";
+		            } else{
+			            cout << "Dependente ainda não atingiu a maioridade!";
+		            }
+                } else {
+                    if(new_age <= 18){
+			            cout << "Dependente atingiu a maioridade!";
+		            } else{
+			            cout << "Dependente ainda não atingiu a maioridade!";
+		           }
+                }
+
+                cout << "\nDeseja fazer uma nova consulta? \nSe sim, digite 1, se não, digite 2 \nOpção: ";
+                cin >> op;
+                } while (op == 1);
+            } else{
+                cout << "Dependente não encontrado.";
+        }arquivo.close();
+    } else {
+        cout << "Não foi possível abrir o arquivo." << endl;
+    }
+}
+
 
 void relatorioDependente(const string& depCadastrados){
     fstream arquivoDependente;
