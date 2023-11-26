@@ -92,8 +92,11 @@ int buscarAssociadoPorCPF(associado cad_assos[], int tamanho, int cpf) {
 }
 
 void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a);
+void manutencaoPessoa();
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho);
+void manutencaoDependente();
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]);
+void manutencaoVisitante();
 void isMaior(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[]);
 void registroVisitas();
 void relatorioDependente();
@@ -137,15 +140,57 @@ int main() {
 
         switch (op) {
             case 1:
-                cadastroPessoa(cad_pessoa, cad_end, nascimento, cad_assos, i, a);
+                int op1;
+                cout << "Deseja realizar um novo cadastro ou manutenção de um dado existente?\n";
+                cout << "1- Novo Cadastro\n";
+                cout << "2- Manutenção de dados\n";
+                cout << "Opção: ";
+                cin >> op1;
+                cout << "============================================"<< endl;
+
+                if(op1 == 1){
+                    cadastroPessoa(cad_pessoa, cad_end, nascimento, cad_assos, i, a);
+                } else if(op1 == 2){
+                    manutencaoPessoa();
+                } else{
+                    cout << "Opção inválida! Tente novamente.";
+                }
             break;
 
             case 2:
-                cadastroDependente(cad_dependente, dat_nasc_dependente, i, a, cad_assos, 100);
+                int op2;
+                cout << "Deseja realizar um novo cadastro ou manutenção de um dado existente?\n";
+                cout << "1- Novo Cadastro\n";
+                cout << "2- Manutenção de dados\n";
+                cout << "Opção: ";
+                cin >> op2;
+                cout << "============================================"<< endl;
+
+                if(op2 == 1){
+                    cadastroDependente(cad_dependente, dat_nasc_dependente, i, a, cad_assos, 100);
+                } else if(op2 == 2){
+                    manutencaoDependente();
+                } else{
+                    cout << "Opção inválida! Tente novamente.";
+                }
             break;
 
             case 3:
-                cadastroVisitante(cad_visitante, i, a, cad_assos, 100, dat_nasc_visitante);
+                int op3;
+                cout << "Deseja realizar um novo cadastro ou manutenção de um dado existente?\n";
+                cout << "1- Novo Cadastro\n";
+                cout << "2- Manutenção de dados\n";
+                cout << "Opção: ";
+                cin >> op3;
+                cout << "============================================"<< endl;
+
+                if(op3 == 1){
+                    cadastroVisitante(cad_visitante, i, a, cad_assos, 100, dat_nasc_visitante);
+                } else if(op3 == 2){
+                    manutencaoVisitante();
+                } else{
+                    cout << "Opção inválida! Tente novamente.";
+                }
             break;
 
             case 4:
@@ -265,6 +310,9 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
 
     arquivo.close();
 }
+void manutencaoPessoa(){
+
+}
 
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho) {
     fstream arquivo;
@@ -333,6 +381,24 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
 
     arquivo.close();
     cout << endl;
+}
+
+void manutencaoDependente(){
+    int op4;
+    cout << "Deseja Fazer a manutenção de qual dado? ";
+    cout << "1- Telefone\n";
+    cout << "2- Endereço\n";
+    cout << "Opção: ";
+    cin >> op4;
+    cout << "============================================\n";
+
+    if(op4 == 1){
+
+    } else if(op4 == 2){
+
+    } else{
+        cout << "Opção inválida! Tente novamente.";
+    }
 }
 
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]) {
@@ -418,6 +484,10 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
     }
     arquivoVisitante.close();
     registroVisitas.close();
+}
+
+void manutencaoVisitante(){
+    cout << "op 2";
 }
 
 string dependente::codExterno(int ano, int codigo) {
