@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include <locale.h>
-#include <ctime>
+#include <time.h>
 
 using namespace std;
 
@@ -20,12 +20,6 @@ struct dt_nasc {
     int ano;
 };
 
-struct dt_associacao {
-    int ass_dia;
-    int ass_mes;
-    int ass_ano;
-};
-
 struct dt_visita {
     int vis_dia;
     int vis_mes;
@@ -36,7 +30,7 @@ struct dt_visita {
 };
 
 struct associado {
-    int cpf;  // Modificado para CPF
+    int cpf; 
     string tipo_socio;
     float mensalidade;
     string codigo_associado;
@@ -49,6 +43,7 @@ struct dependente {
     string codigo_externo;
     string nome_dependente;
     int cpf;
+    int cpfConsulta;
     char sexo;
     static string codExterno(int ano, int codigo);
     static int contadorDependentes;
@@ -71,6 +66,12 @@ struct visitante {
     static int contadorVisitantes;
 };
 
+struct dat_nasc_visitante{
+    int dia;
+    int mes;
+    int ano;
+};
+
 struct endereco {
     string bairro;
     string rua;
@@ -89,25 +90,17 @@ int buscarAssociadoPorCPF(associado cad_assos[], int tamanho, int cpf) {
     return -1; // Retorna -1 se o associado n o for encontrado
 }
 
-int buscarDependentePorCPF(dependente cad_dependente[], int tamanho, int cpf) {
-    for (int j = 0; j < tamanho; j++) {
-        if (cad_dependente[j].cpf == cpf) {
-            return j; // Retorna o índice do dependente se encontrado
-        }
-    }
-    return -1; // Retorna -1 se o dependente não for encontrado
-}
-
 void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a);
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho);
-void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho);
-void isOlder(dependente cad_dependente[], int tamanho);
-void relatorioDependente(const string& depCadastrados);
-void relatorioVisitante(const string& visCadastrados);
+void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]);
+void isMaior(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[]);
+void registroVisitas();
+void relatorioDependente();
+void relatorioVisitante();
 
-    int associado::contadorAssociados = 1;
-    int dependente::contadorDependentes = 1;
-    int visitante::contadorVisitantes = 1;
+int associado::contadorAssociados = 1;
+int dependente::contadorDependentes = 1;
+int visitante::contadorVisitantes = 1;
 
 int main() {
 
@@ -115,17 +108,17 @@ int main() {
     int op = 0;
     int i = 0;
     int a = 1;
-    int ano, codigo;
     pessoa cad_pessoa[100];
+    associado cad_assos[100];
     dt_nasc nascimento[100];
     endereco cad_end[100];
-    associado cad_assos[100];
     dependente cad_dependente[100];
     dat_nasc_dependente dat_nasc_dependente[100];
     visitante cad_visitante[100];
-    dt_associacao data_assos[100];
+    dat_nasc_visitante dat_nasc_visitante[100];
 
     do {
+        cout << "\n============================================"<< endl;
 		cout << "Bem vindo ao menu do Clube Jimin do BTS"<< endl;
 		cout << "============================================"<< endl << endl;
 		cout << "1- Cadastro ou manutenção de Associados\n";
@@ -151,23 +144,23 @@ int main() {
             break;
 
             case 3:
-                cadastroVisitante(cad_visitante, i, a, cad_assos, 100);
+                cadastroVisitante(cad_visitante, i, a, cad_assos, 100, dat_nasc_visitante);
             break;
 
             case 4:
-                isOlder(cad_dependente, tamanho);
+                isMaior(cad_dependente, dat_nasc_dependente);
             break;
 
             case 5:
-
+                registroVisitas();
             break;
 
             case 6:
-                relatorioDependente("Dependentes_Cadastrados.txt");
+                relatorioDependente();
             break;
 
             case 7:
-                relatorioVisitante("Visitantes_Cadastrados.txt");
+                relatorioVisitante();
             break;
         }
 
@@ -198,8 +191,12 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
         cout << "Ano: ";
         cin >> nascimento[i].ano;
         arquivo << "Data de Nascimento: " << nascimento[i].dia << "/" << nascimento[i].mes << "/" << nascimento[i].ano << "\n";
-        cin.ignore();
 
+        cout << "\nGênero (M/F): ";
+        cin >> cad_pessoa[i].sexo;
+        arquivo << "Gênero: " << cad_pessoa[i].sexo << "\n";
+
+        cin.ignore();
         cout << "\nEndereço:\nRua: ";
         getline(cin, cad_end[i].rua);
         arquivo << "Rua: " << cad_end[i].rua << "\n";
@@ -209,17 +206,13 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
         cout << "Número: ";
         cin >> cad_end[i].num;
         arquivo << "Número da casa: " << cad_end[i].num << "\n";
-        cin.ignore();
         cout << "Cidade: ";
+        cin.ignore();
         getline(cin, cad_end[i].cidade);
         arquivo << "Cidade: " << cad_end[i].cidade << "\n";
         cout << "Estado: ";
         getline(cin, cad_end[i].estado);
         arquivo << "Estado: " << cad_end[i].estado << "\n";
-
-        cout << "\nGênero (M/F): ";
-        cin >> cad_pessoa[i].sexo;
-        arquivo << "Gênero: " << cad_pessoa[i].sexo << "\n";
 
         cout << "\nTelefone para contato: ";
         cin >> cad_pessoa[i].telefone;
@@ -231,15 +224,28 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
 
         cout << "\nTipo de sócio (proprietário, contribuinte): ";
         cin >> cad_assos[i].tipo_socio;
+        arquivo << "Tipo de sócio: " << cad_assos[i].tipo_socio << "\n";
 
         cad_assos[i].cpf = cad_pessoa[i].cpf;
 
         cout << "\nMensalidade: ";
         cin >> cad_assos[i].mensalidade;
-        arquivo << "Tipo de sócio: " << cad_assos[i].tipo_socio << "\n";
         arquivo << "Mensalidade: " << cad_assos[i].mensalidade << "\n";
+
+        struct tm *data_atual;
+        time_t agora;
+        time(&agora);
+        data_atual = localtime(&agora);
+        int dia_atual = data_atual->tm_mday;
+        int mes_atual = data_atual->tm_mon + 1;
+        int ano_atual = data_atual->tm_year + 1900;    
+        cout << "\nData de associação: ";
+        cout << dia_atual << "/" << mes_atual << "/" << ano_atual << endl;
+        arquivo << "Data de associação: " << dia_atual << "/" << mes_atual << "/" << ano_atual << endl;
+
         cad_assos[i].codigo_associado = "A" + to_string(associado::contadorAssociados);
-        cout << "Código do associado: " << cad_assos[i].codigo_associado << endl;
+
+        cout << "\nCódigo do associado: " << cad_assos[i].codigo_associado;
         arquivo << "Código: " << cad_assos[i].cpf << "\n";
         arquivo << "============================================\n";
 
@@ -252,7 +258,6 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
     }
 
     arquivo.close();
-    cout << endl;
 }
 
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho) {
@@ -268,13 +273,21 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
         int indexAssociado = buscarAssociadoPorCPF(cad_assos, tamanho, cpfAssociado);
 
         if (indexAssociado != -1) {
-            cin.ignore(); // Limpar o buffer do teclado
+            cin.ignore();
 
             cout << "\nNome do dependente: ";
             getline(cin, cad_dependente[i].nome_dependente);
             arquivo << "Nome: " << cad_dependente[i].nome_dependente << "\n";
 
             cad_dependente[i].cpf = cpfAssociado;
+
+            cin.ignore();
+            cout << "\nCPF do dependente: ";
+            cin >> cad_dependente[i].cpfConsulta;
+            arquivo << "CPF do dependente: " << cad_dependente[i].cpfConsulta << "\n";
+
+            cout << "\nCPF do associado: " << cpfAssociado << endl;
+            arquivo << "CPF do associado: " << cpfAssociado << "\n";
 
             cout << "\nData de nascimento:\nDia: ";
             cin >> dat_nasc_dependente[i].dia;
@@ -289,16 +302,14 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
             cin >> cad_dependente[i].sexo;
             arquivo << "Gênero: " << cad_dependente[i].sexo << "\n";
 
-            // Inserir l gica para gerar o c digo externo
-            int anoAssociacao=2023; // Coloque o ano de associa  o desejado
             cad_dependente[i].codigo_dependente = "D" + to_string(dependente::contadorDependentes);
-           cad_dependente[i].codigo_externo = dependente::codExterno(2023, dependente::contadorDependentes);
+            cad_dependente[i].codigo_externo = dependente::codExterno(2023, dependente::contadorDependentes);
 
-           cout << "\nCódigo do dependente: " <<  cad_dependente[i].codigo_dependente << endl;
-           cout << "\nCódigo externo do dependente: " << cad_dependente[i].codigo_externo << endl;
+            cout << "\nCódigo do dependente: " <<  cad_dependente[i].codigo_dependente << endl;
+            cout << "\nCódigo externo do dependente: " << cad_dependente[i].codigo_externo << endl;
 
 
-            cout << "Dependente cadastrado com sucesso!" << endl;
+            cout << "\nDependente cadastrado com sucesso!";
             arquivo << "Código do dependente: " << cad_dependente[i].codigo_dependente << "\n";
             arquivo << "Código externo do dependente: " << cad_dependente[i].codigo_externo << "\n";
             arquivo << "============================================\n";
@@ -308,19 +319,23 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
             i++;
 
         } else {
-            cout << "Associado não encontrado. Cadastre o associado primeiramente." << endl;
+            cout << "Associado não encontrado. Cadastre o associado primeiramente.";
         }
     } else {
-        cout << "Arquivo não encontrado!" << endl;
+        cout << "Arquivo não encontrado!";
     }
 
     arquivo.close();
     cout << endl;
 }
 
-void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho) {
+void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]) {
     fstream arquivoVisitante;
     arquivoVisitante.open("Visitantes_Cadastrados.txt", fstream::in | fstream::out | fstream::app);
+
+    fstream registroVisitas;
+    registroVisitas.open("Registro_Visitas.txt", fstream::in | fstream::out | fstream::app);
+    string linha;
 
     if (arquivoVisitante.is_open()) {
         cout << "Opção cadastro de visitante\n\nCPF do associado: ";
@@ -334,14 +349,19 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
         if (indexAssociado != -1) {
             cout << "\nCPF do visitante: ";
             cin >> cad_visitante[i].cpf;
+            arquivoVisitante << "CPF: " << cad_visitante[i].cpf << endl;
             cin.ignore();
+
+            arquivoVisitante << "CPF do associado: " << cpfAssociado << endl;
 
             cout << "\nNome: ";
             cin >> ws;
             getline(cin, cad_visitante[i].nome_visitante);
+            arquivoVisitante << "Nome: " << cad_visitante[i].nome_visitante << endl;
 
-            cad_visitante[i].codigo_visitante = "V" + to_string(visitante::contadorVisitantes);
-            cout << "Código do visitante: " << cad_visitante[i].codigo_visitante << endl;
+            cout << "\nGênero (M/F): ";
+            cin >> cad_visitante[i].sexo;
+            arquivoVisitante << "Gênero: " << cad_visitante[i].sexo << endl;
 
             cout << "\nData da visita:\nDia: ";
             cin >> cad_visitante[i].data_visita.vis_dia;
@@ -349,113 +369,131 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
             cin >> cad_visitante[i].data_visita.vis_mes;
             cout << "Ano: ";
             cin >> cad_visitante[i].data_visita.vis_ano;
+            arquivoVisitante << "Data da visita inicial: "<< cad_visitante[i].data_visita.vis_dia << "/" << cad_visitante[i].data_visita.vis_mes << "/" << cad_visitante[i].data_visita.vis_ano << endl;
 
-            cout << "Visitante cadastrado com sucesso!" << endl;
+            cout << "\nData da visita final:\nDia: ";
+            cin >> cad_visitante[i].data_visita.vis_dia_final;
+            cout << "Mês: ";
+            cin >> cad_visitante[i].data_visita.vis_mes_final;
+            cout << "Ano: ";
+            cin >> cad_visitante[i].data_visita.vis_ano_final;
+            arquivoVisitante << "Data da visita final: " << cad_visitante[i].data_visita.vis_dia_final << "/" << cad_visitante[i].data_visita.vis_mes_final << "/" << cad_visitante[i].data_visita.vis_ano_final << endl;
 
-            arquivoVisitante << "CPF: " << cad_visitante[i].cpf << endl;
-            arquivoVisitante << "Nome: " << cad_visitante[i].nome_visitante << endl;
-            arquivoVisitante << "Data da visita: "<< cad_visitante[i].data_visita.vis_dia << "/" << cad_visitante[i].data_visita.vis_mes << "/" << cad_visitante[i].data_visita.vis_ano << endl;
+            cout << "\nData de nascimento:\nDia: ";
+            cin >> dat_nasc_visitante[i].dia;
+            cout << "Mês: ";
+            cin >> dat_nasc_visitante[i].mes;
+            cout << "Ano: ";
+            cin >> dat_nasc_visitante[i].ano;
+            arquivoVisitante << "Data de nascimento: " << dat_nasc_visitante[i].dia << "/" <<dat_nasc_visitante[i].mes << "/" << dat_nasc_visitante[i].ano << endl;
+          
+            cad_visitante[i].codigo_visitante = "V" + to_string(visitante::contadorVisitantes);
+            cout << "Código do visitante: " << cad_visitante[i].codigo_visitante << endl;
             arquivoVisitante << "Código: " << cad_visitante[i].codigo_visitante << "\n";
             arquivoVisitante << "============================================\n";
+
+            cout << "Visitante cadastrado com sucesso!";
+
+
+            //Registro para exibir na opção 5 do menu, de registro de visitas:
+            registroVisitas << "CPF: " << cad_visitante[i].cpf << endl;
+            registroVisitas << "Data da visita inicial: "<< cad_visitante[i].data_visita.vis_dia << "/" << cad_visitante[i].data_visita.vis_mes << "/" << cad_visitante[i].data_visita.vis_ano << endl;
+            registroVisitas << "Data da visita final: " << cad_visitante[i].data_visita.vis_dia_final << "/" << cad_visitante[i].data_visita.vis_mes_final << "/" << cad_visitante[i].data_visita.vis_ano_final << endl;
+            registroVisitas << "============================================\n";
 
             a++;
             visitante::contadorVisitantes++;
             i++;
         } else {
-            cout << "Associado não encontrado. Cadastre o associado primeiramente." << endl;
+            cout << "Associado não encontrado. Cadastre o associado primeiramente.";
         }
     } else {
-        cout << "Arquivo não encontrado!" << endl;
+        cout << "Arquivo não encontrado!";
     }
-
     arquivoVisitante.close();
-    cout << endl;
+    registroVisitas.close();
 }
 
 string dependente::codExterno(int ano, int codigo) {
     return to_string(ano) + "-" + to_string(codigo);
 }
 
-
 string visitante::codExterno(int ano, int codigo) {
     return to_string(ano) + to_string(codigo);
 }
 
-void isOlder(dependente cad_dependente[], int tamanho){
+void isMaior(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[]) {
     fstream arquivo;
-    arquivo.open("Dependentes_Cadastrados.txt", fstream::in | fstream::out | fstream::app);
+    arquivo.open("Dependentes_Cadastrados.txt", fstream::in);
 
-    if (arquivo.is_open()) {
-        cout << "Consulta de Maioridade\n\nCPF do dependente: ";
-        int cpfDependente;
-        cin >> cpfDependente;
-
-        // Verifica se o associado com o CPF informado existe
-        int indexDependente = buscarDependentePorCPF(cad_dependente, tamanho, cpfDependente);
-
-            if (indexDependente != -1) {
-                int i = indexDependente;
-                int op;
-                do {
-                dependente dependente = cad_dependente[indexDependente];   
-
-                // Leitura da data de nascimento do arquivo
-                arquivo.seekg(0, ios::beg);
-                string linha;
-                while (getline(arquivo, linha)) {
-                    // Supondo que cada linha no arquivo tenha o formato "CPF: xxx, DataNascimento: dd/mm/aaaa"
-                    size_t pos = linha.find("DataNascimento:");
-                    if (pos != string::npos) {
-                        sscanf(linha.c_str() + pos, "DataNascimento: %d/%d/%d", &dependente.dat_nasc_dependente.dia, &dependente.dat_nasc_dependente.mes, &dependente.dat_nasc_dependente.ano);
-                        break;
-                    }
-                }         
-
-                struct tm *data_atual;
-                time_t agora;
-
-                int dia = dat_nasc_dependente[i].dia;
-                int mes = dat_nasc_dependente[i].mes;
-                int ano = dat_nasc_dependente[i].ano;
-
-
-                time(&agora);
-                data_atual = localtime(&agora);
-                int dia_atual = data_atual->tm_mday;
-                int mes_atual = data_atual->tm_mon + 1; // janeiro corresponde a 0
-                int ano_atual = data_atual->tm_year + 1900;
-
-                int idade = ano_atual - ano; //mudar caso altere a estrutura ao puxar o aniversário do dependente
-                int new_age;
-
-                if (mes > mes_atual || (mes == mes_atual && dia > dia_atual)) {
-                    new_age = idade - 1;
-                    if(new_age <= 18){
-			            cout << "Dependente atingiu a maioridade!";
-		            } else{
-			            cout << "Dependente ainda não atingiu a maioridade!";
-		            }
-                } else {
-                    if(new_age <= 18){
-			            cout << "Dependente atingiu a maioridade!";
-		            } else{
-			            cout << "Dependente ainda não atingiu a maioridade!";
-		           }
-                }
-
-                cout << "\nDeseja fazer uma nova consulta? \nSe sim, digite 1, se não, digite 2 \nOpção: ";
-                cin >> op;
-                } while (op == 1);
-            } else{
-                cout << "Dependente não encontrado.";
-        }arquivo.close();
-    } else {
+    if (!arquivo.is_open()) {
         cout << "Não foi possível abrir o arquivo." << endl;
+        return;
     }
+
+    bool encontrado = false;
+    int cpfDependente;
+
+    cout << "Opção consulta de maioridade\n\nInsira o CPF do dependente: ";
+    cin >> cpfDependente;
+
+    for (int i = 0; i < 100; i++) {
+        arquivo >> cad_dependente[i].cpfConsulta >> dat_nasc_dependente[i].dia >> dat_nasc_dependente[i].mes >> dat_nasc_dependente[i].ano;
+
+        if (cad_dependente[i].cpfConsulta == cpfDependente) {
+            encontrado = true;
+            int dia = dat_nasc_dependente[i].dia;
+            int mes = dat_nasc_dependente[i].mes;
+            int ano = dat_nasc_dependente[i].ano;
+
+            struct tm *data_atual;
+            time_t agora;
+            time(&agora);
+            data_atual = localtime(&agora);
+            int dia_atual = data_atual->tm_mday;
+            int mes_atual = data_atual->tm_mon + 1; // janeiro corresponde a 0
+            int ano_atual = data_atual->tm_year + 1900;
+
+            int idade = ano_atual - ano;
+
+            if (mes > mes_atual || (mes == mes_atual && dia > dia_atual)) {
+                idade--;
+            }
+
+            if(idade >= 18){
+			    cout << "\nDependente atingiu a maioridade!\n";
+		    } else{
+			    cout << "\nDependente ainda não atingiu a maioridade!\n";
+		    }
+
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        cout << "Dependente não encontrado." << endl;
+    }
+
+    arquivo.close();
 }
 
+void registroVisitas(){
+    fstream registroVisitas;
+    registroVisitas.open("Registro_Visitas.txt", fstream::in);
+    string linha;
 
-void relatorioDependente(const string& depCadastrados){
+	if(registroVisitas.is_open()){
+        cout << "\nREGISTRO DE VISITAS:\n\n";
+        while(getline(registroVisitas, linha)){
+            cout << linha << endl;
+        }
+        registroVisitas.close();
+    }else{
+        cout << "Não foi possível abrir o arquivo." << endl;
+    }
+}    
+
+void relatorioDependente(){
     fstream arquivoDependente;
     arquivoDependente.open("Dependentes_Cadastrados.txt", ios::in);
     string linha;
@@ -471,7 +509,7 @@ void relatorioDependente(const string& depCadastrados){
     }
 }
 
-void relatorioVisitante(const string& visCadastrados){
+void relatorioVisitante(){
     fstream arquivoVisitantes;
     arquivoVisitantes.open("Visitantes_Cadastrados.txt", ios::in);
     string linha;
