@@ -30,9 +30,10 @@ struct dt_visita {
 };
 
 struct associado {
-    int cpf; 
+    int cpf;
     string tipo_socio;
     float mensalidade;
+    int num_dependentes;
     string codigo_associado;
     static int contadorAssociados;
 };
@@ -171,6 +172,7 @@ int main() {
 
 void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a) {
     fstream arquivo;
+    int val_fix = 200;
     arquivo.open("Associados_Cadastrados.txt", fstream::in | fstream::out | fstream::app);
 
     if (arquivo.is_open()) {
@@ -227,9 +229,13 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
         arquivo << "Tipo de sócio: " << cad_assos[i].tipo_socio << "\n";
 
         cad_assos[i].cpf = cad_pessoa[i].cpf;
+        cout << "Quantos dependentes deseja cadastrar?\n";
+        cin >> cad_assos[i].num_dependentes;
 
-        cout << "\nMensalidade: ";
-        cin >> cad_assos[i].mensalidade;
+        int val_dep_fix = 40;
+        cad_assos[i].mensalidade = val_fix + val_dep_fix * cad_assos[i].num_dependentes;
+
+        cout << "\nMensalidade = " <<cad_assos[i].mensalidade;
         arquivo << "Mensalidade: " << cad_assos[i].mensalidade << "\n";
 
         struct tm *data_atual;
@@ -238,7 +244,7 @@ void cadastroPessoa(pessoa cad_pessoa[], endereco cad_end[], dt_nasc nascimento[
         data_atual = localtime(&agora);
         int dia_atual = data_atual->tm_mday;
         int mes_atual = data_atual->tm_mon + 1;
-        int ano_atual = data_atual->tm_year + 1900;    
+        int ano_atual = data_atual->tm_year + 1900;
         cout << "\nData de associação: ";
         cout << dia_atual << "/" << mes_atual << "/" << ano_atual << endl;
         arquivo << "Data de associação: " << dia_atual << "/" << mes_atual << "/" << ano_atual << endl;
@@ -386,7 +392,7 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
             cout << "Ano: ";
             cin >> dat_nasc_visitante[i].ano;
             arquivoVisitante << "Data de nascimento: " << dat_nasc_visitante[i].dia << "/" <<dat_nasc_visitante[i].mes << "/" << dat_nasc_visitante[i].ano << endl;
-          
+
             cad_visitante[i].codigo_visitante = "V" + to_string(visitante::contadorVisitantes);
             cout << "Código do visitante: " << cad_visitante[i].codigo_visitante << endl;
             arquivoVisitante << "Código: " << cad_visitante[i].codigo_visitante << "\n";
@@ -491,7 +497,7 @@ void registroVisitas(){
     }else{
         cout << "Não foi possível abrir o arquivo." << endl;
     }
-}    
+}
 
 void relatorioDependente(){
     fstream arquivoDependente;
