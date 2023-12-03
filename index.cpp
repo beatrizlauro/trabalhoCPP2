@@ -88,7 +88,7 @@ int buscarAssociadoPorCPF(associado cad_assos[], int tamanho, int cpf) {
 }
 
 void cadastroPessoa(endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a);
-void alterarAssociado(endereco cad_end[], associado cad_assos[], int tamanho);
+void alterarAssociado(endereco cad_end[], associado cad_assos[], dt_nasc nascimento[], int i, int tamanho);
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho);
 void alterarDependente();
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]);
@@ -146,7 +146,7 @@ int main() {
                 if(op1 == 1){
                     cadastroPessoa(cad_end, nascimento, cad_assos, i, a);
                 } else if(op1 == 2){
-                    alterarAssociado(cad_end, cad_assos, a);
+                    alterarAssociado(cad_end, cad_assos, nascimento, i, 100);
                 } else{
                     cout << "Opção inválida! Tente novamente.";
                 }
@@ -295,6 +295,8 @@ void cadastroPessoa(endereco cad_end[], dt_nasc nascimento[], associado cad_asso
         arquivo << "Código: " << cad_assos[i].cpf << "\n";
         arquivo << "============================================\n";
 
+
+
         a++;
         associado::contadorAssociados++;
         i++;
@@ -306,8 +308,8 @@ void cadastroPessoa(endereco cad_end[], dt_nasc nascimento[], associado cad_asso
     arquivo.close();
 }
 
-void alterarAssociado(endereco cad_end[], associado cad_assos[], int tamanho) {
- int procura_cpf;
+void alterarAssociado(endereco cad_end[], associado cad_assos[], dt_nasc nascimento[], int i, int tamanho) {
+    int procura_cpf;
 
     cout << "Insira o CPF do associado com o qual deseja alterar os dados: ";
     cin >> procura_cpf;
@@ -315,68 +317,106 @@ void alterarAssociado(endereco cad_end[], associado cad_assos[], int tamanho) {
     int index = buscarAssociadoPorCPF(cad_assos, tamanho, procura_cpf);
 
     if (index != -1) {
+        // Solicitando as modificações
+        cout << "\nDigite as novas informações:\n";
+        cout << "Nome: ";
+        cin >> ws;
+        getline(cin, cad_assos[index].nome);
 
-        cout << "Novo Rua: ";
+        cout << "Data de Nascimento:\nDia: ";
+        cin >> nascimento[index].dia;
+        cout << "Mês: ";
+        cin >> nascimento[index].mes;
+        cout << "Ano: ";
+        cin >> nascimento[index].ano;
+
+        cout << "Gênero (M/F): ";
+        cin >> cad_assos[index].sexo;
+
+        cout << "Endereço:\nRua: ";
         cin.ignore();
         getline(cin, cad_end[index].rua);
-        cout << "Novo Bairro: ";
+        cout << "Número: ";
+        cin >> cad_end[index].num;
+        cout << "Bairro: ";
+        cin.ignore();
         getline(cin, cad_end[index].bairro);
-        cout << "Novo Número: ";
-        getline(cin, cad_end[index].num);
-        cout << "Nova Cidade: ";
+        cout << "Cidade: ";
         getline(cin, cad_end[index].cidade);
-        cout << "Novo Estado: ";
+        cout << "Estado: ";
         getline(cin, cad_end[index].estado);
 
-        // Abrir o arquivo para leitura e gravação
-        fstream arquivo("Associados_Cadastrados.txt", fstream::in | fstream::out);
+        cout << "Telefone: ";
+        cin >> cad_assos[index].telefone;
 
-        if (arquivo.is_open()) {
-            // Criar um arquivo temporário para armazenar as alterações
-            fstream arquivoTemp("Associados_Temporario.txt", fstream::out);
+        cout << "E-mail: ";
+        cin >> cad_assos[index].email;
 
-            // Mover para a linha correspondente aos dados do associado
-            string linha;
-            while (getline(arquivo, linha)) {
-                if (linha.find("CPF: " + to_string(procura_cpf)) != string::npos) {
-                    // Se a linha contém o CPF do associado, substituir as três primeiras linhas com os novos dados
-                    arquivoTemp << "Nome: " << cad_assos[index].nome << "\n";
-                    arquivoTemp << "Gênero: " << cad_assos[index].sexo << "\n";
-                    arquivoTemp << "Data de Nascimento: " << "****" << "\n";
+        cout << "Tipo de sócio (proprietário, contribuinte): ";
+        cin >> cad_assos[index].tipo_socio;
 
-                    // Pular as cinco linhas relacionadas ao endereço antigo
-                    for (int i = 0; i < 5; i++) {
-                        getline(arquivo, linha);
-                    }
+        cout << "Número de dependentes: ";
+        cin >> cad_assos[index].num_dependentes;
 
-                    // Continuar lendo as linhas do arquivo original e copiar para o arquivo temporário
-                    while (getline(arquivo, linha)) {
-                        arquivoTemp << linha << "\n";
-                    }
-                } else {
-                    // Copiar as linhas que não correspondem ao associado em questão
-                    arquivoTemp << linha << "\n";
-                }
-            }
+        // Recalcular a mensalidade com base nas novas informações
+        int val_fix = 200;
+        int val_dep_fix = 30;
+        cad_assos[index].mensalidade = val_fix + val_dep_fix * cad_assos[index].num_dependentes;
 
-            // Fechar os arquivos
-            arquivo.close();
-            arquivoTemp.close();
+        // Abre o arquivo original para leitura e escrita
+        fstream arquivo("Associados_Cadastrados.txt", ios::in | ios::out);
 
-            // Remover o arquivo original
-            remove("Associados_Cadastrados.txt");
-
-            // Renomear o arquivo temporário para o nome original
-            rename("Associados_Temporario.txt", "Associados_Cadastrados.txt");
-
-            cout << "Endereço do associado alterado com sucesso!\n";
-        } else {
-            cout << "Erro ao abrir o arquivo para atualização.\n";
+        if (!arquivo.is_open()) {
+            cout << "Não foi possível abrir o arquivo para leitura e escrita.";
+            return;
         }
+
+        // Procura e atualiza as informações no arquivo
+        string linha;
+        while (getline(arquivo, linha)) {
+            if (linha.find("CPF: " + to_string(procura_cpf)) != string::npos) {
+                // Atualiza as informações no arquivo
+                arquivo.seekp(arquivo.tellg() - linha.length());
+                arquivo << "CPF: " << cad_assos[index].cpf << "\n";
+                arquivo << "Nome: " << cad_assos[index].nome << "\n";
+                arquivo << "Data de Nascimento: " << nascimento[index].dia << "/" << nascimento[index].mes << "/" << nascimento[index].ano << "\n";
+                arquivo << "Gênero: " << cad_assos[index].sexo << "\n";
+                arquivo << "Rua: " << cad_end[index].rua << "\n";
+                arquivo << "Bairro: " << cad_end[index].bairro << "\n";
+                arquivo << "Número da casa: " << cad_end[index].num << "\n";
+                arquivo << "Cidade: " << cad_end[index].cidade << "\n";
+                arquivo << "Estado: " << cad_end[index].estado << "\n";
+                arquivo << "Telefone: " << cad_assos[index].telefone << "\n";
+                arquivo << "E-mail: " << cad_assos[index].email << "\n";
+                arquivo << "Tipo de sócio: " << cad_assos[index].tipo_socio << "\n";
+                arquivo << "Mensalidade: " << cad_assos[index].mensalidade << "\n";
+
+                // Cálculos para data de associação e código
+                struct tm *data_atual;
+                time_t agora;
+                time(&agora);
+                data_atual = localtime(&agora);
+                int dia_atual = data_atual->tm_mday;
+                int mes_atual = data_atual->tm_mon + 1;
+                int ano_atual = data_atual->tm_year + 1900;
+                cad_assos[index].codigo_associado = "A" + to_string(associado::contadorAssociados);
+
+                arquivo << "Data de associação: " << dia_atual << "/" << mes_atual << "/" << ano_atual << endl;
+                arquivo << "Código: " << cad_assos[index].codigo_associado << "\n";
+                arquivo << "============================================\n";
+
+                cout << "\nDados do associado alterados com sucesso!\n";
+                break; // Sai do loop após encontrar e atualizar o associado
+            }
+        }
+
+        // Fecha o arquivo
+        arquivo.close();
     } else {
         cout << "Associado não encontrado.\n";
     }
 }
+
 
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho) {
     fstream arquivo;
