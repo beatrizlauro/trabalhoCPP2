@@ -216,7 +216,7 @@ void cadastroPessoa(endereco cad_end[], dt_nasc nascimento[], associado cad_asso
     arquivo.open("Associados_Cadastrados.txt", fstream::in | fstream::out | fstream::app);
 
     if (arquivo.is_open()) {
-        cout << "\nOpção cadastro de associados\n\nCPF:";
+        cout << "\nOpção cadastro de associados\n\nCPF: ";
         cin >> cad_assos[i].cpf;
         arquivo << "CPF: " << cad_assos[i].cpf << "\n";
 
