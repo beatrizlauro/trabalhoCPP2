@@ -90,10 +90,10 @@ int buscarAssociadoPorCPF(associado cad_assos[], int tamanho, int cpf) {
 int buscarDependentePorCPF(dependente cad_dependente[], int tamanho, int cpf) {
     for (int b = 0; b < tamanho; b++) {
         if (cad_dependente[b].cpf == cpf) {
-            return b; 
+            return b;
         }
     }
-    return -1; 
+    return -1;
 }
 
 int buscarVisitantePorCPF(visitante cad_visitante[], int tamanho, int cpf) {
@@ -102,15 +102,18 @@ int buscarVisitantePorCPF(visitante cad_visitante[], int tamanho, int cpf) {
             return m;
         }
     }
-    return -1; 
+    return -1;
 }
 
 void cadastroPessoa(endereco cad_end[], dt_nasc nascimento[], associado cad_assos[], int &i, int &a);
 void alterarAssociado(endereco cad_end[], associado cad_assos[], dt_nasc nascimento[], int tamanho);
+void excluirPessoa(associado cad_assos[], int tamanho);
 void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int &i, int &a, associado cad_assos[], int tamanho);
-void alterarDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int tamanho);
+void alterarDependente(/*dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int tamanho*/);
+void excluirDependente();
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]);
 void alterarVisitante();
+void excluirVisitante();
 void isMaior(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[]);
 void registroVisitas();
 void relatorioDependente(associado cad_assos[], int tamanho);
@@ -154,9 +157,10 @@ int main() {
         switch (op) {
             case 1:
                 int op1;
-                cout << "Deseja realizar um novo cadastro ou manutenção de um dado existente?\n";
+                cout << "Escolha a opção desejada: \n";
                 cout << "1- Novo Cadastro\n";
                 cout << "2- Manutenção de dados\n";
+                cout << "3- Exclusão de dados\n";
                 cout << "Opção: ";
                 cin >> op1;
                 cout << "============================================"<< endl;
@@ -165,6 +169,8 @@ int main() {
                     cadastroPessoa(cad_end, nascimento, cad_assos, i, a);
                 } else if(op1 == 2){
                     alterarAssociado(cad_end, cad_assos, nascimento, 100);
+                } else if(op1 == 3){
+                    excluirPessoa(cad_assos, 100);
                 } else{
                     cout << "Opção inválida! Tente novamente.";
                 }
@@ -172,9 +178,10 @@ int main() {
 
             case 2:
                 int op2;
-                cout << "Deseja realizar um novo cadastro ou manutenção de um dado existente?\n";
+                cout << "Escolha a opção desejada: \n";
                 cout << "1- Novo Cadastro\n";
                 cout << "2- Manutenção de dados\n";
+                cout << "3- Exclusão de dados\n";
                 cout << "Opção: ";
                 cin >> op2;
                 cout << "============================================"<< endl;
@@ -182,7 +189,9 @@ int main() {
                 if(op2 == 1){
                     cadastroDependente(cad_dependente, dat_nasc_dependente, i, a, cad_assos, 100);
                 } else if(op2 == 2){
-                    alterarDependente(cad_dependente, dat_nasc_dependente, 100);
+                    alterarDependente(/*cad_dependente, dat_nasc_dependente, 100*/);
+                } else if(op2 == 3){
+                    excluirDependente();
                 } else{
                     cout << "Opção inválida! Tente novamente.";
                 }
@@ -190,9 +199,10 @@ int main() {
 
             case 3:
                 int op3;
-                cout << "Deseja realizar um novo cadastro ou manutenção de um dado existente?\n";
+                cout << "Escolha a opção desejada: \n";
                 cout << "1- Novo Cadastro\n";
                 cout << "2- Manutenção de dados\n";
+                cout << "3- Exclusão de dados\n";
                 cout << "Opção: ";
                 cin >> op3;
                 cout << "============================================"<< endl;
@@ -201,6 +211,8 @@ int main() {
                     cadastroVisitante(cad_visitante, i, a, cad_assos, 100, dat_nasc_visitante);
                 } else if(op3 == 2){
                     alterarVisitante();
+                } else if(op3 == 3){
+                    excluirVisitante();
                 } else{
                     cout << "Opção inválida! Tente novamente.";
                 }
@@ -311,7 +323,7 @@ void cadastroPessoa(endereco cad_end[], dt_nasc nascimento[], associado cad_asso
 
         cout << "\nCódigo do associado: " << cad_assos[i].codigo_associado;
         arquivo << "Código: " << cad_assos[i].cpf << "\n";
-        arquivo << "=================================================================================================================================================================================================================\n";
+        arquivo << "==============================================================================================================================================================================================\n";
 
         a++;
         associado::contadorAssociados++;
@@ -418,7 +430,7 @@ void alterarAssociado(endereco cad_end[], associado cad_assos[], dt_nasc nascime
 
                 arquivo << "Data de associação: " << dia_atual << "/" << mes_atual << "/" << ano_atual << " | ";
                 arquivo << "Código: " << cad_assos[index].codigo_associado << "\n";
-                arquivo << "=================================================================================================================================================================================================================\n";
+                arquivo << "==============================================================================================================================================================================================\n";
 
                 cout << "\nDados do associado alterados com sucesso!\n";
                 break; // Sai do loop após encontrar e atualizar o associado
@@ -426,6 +438,48 @@ void alterarAssociado(endereco cad_end[], associado cad_assos[], dt_nasc nascime
         }
 
         arquivo.close();
+    } else {
+        cout << "Associado não encontrado.\n";
+    }
+}
+
+void excluirPessoa(associado cad_assos[], int tamanho) {
+    fstream arquivo("Associados_Cadastrados.txt", ios::in | ios::out);
+
+    if (!arquivo.is_open()) {
+        cout << "Não foi possível abrir o arquivo para leitura e escrita." << endl;
+        return;
+    }
+
+    int procura_cpf;
+
+    cout << "Insira o CPF do associado com o qual deseja alterar os dados: ";
+    cin >> procura_cpf;
+
+    int index = buscarAssociadoPorCPF(cad_assos, tamanho, procura_cpf);
+
+    string linha;
+    ofstream novoArquivo("Temporario.txt", ios::out);
+
+    if (index != -1) {
+        while (getline(arquivo, linha)) {
+            // Verifica se a linha contém o CPF a ser excluído
+            if (linha.find("CPF: " + to_string(procura_cpf)) != string::npos) {
+                // Pula a linha a ser excluída
+                getline(arquivo, linha);
+                cout << "\nAssociado excluído com sucesso!\n";
+                continue; // Pula para a próxima iteração do loop
+            }
+
+            // Reescreve as linhas que não contêm o CPF a ser excluído
+            novoArquivo << linha << endl;
+        }
+
+        arquivo.close(); // Fecha o arquivo antes de tentar renomear
+        novoArquivo.close(); // Fecha o arquivo temporário
+
+        remove("Associados_Cadastrados.txt");
+        rename("Temporario.txt", "Associados_Cadastrados.txt");
     } else {
         cout << "Associado não encontrado.\n";
     }
@@ -482,7 +536,7 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
             cout << "\nDependente cadastrado com sucesso!";
             arquivo << "Código do dependente: " << cad_dependente[i].codigo_dependente << " | ";
             arquivo << "Código externo do dependente: " << cad_dependente[i].codigo_externo << "\n";
-            arquivo << "=================================================================================================================================================================================================================\n";
+            arquivo << "==============================================================================================================================================================================================\n";
 
             a++;
             dependente::contadorDependentes++;
@@ -499,8 +553,9 @@ void cadastroDependente(dependente cad_dependente[], dat_nasc_dependente dat_nas
     cout << endl;
 }
 
-void alterarDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int tamanho) {
-    int procura_cpf;
+void alterarDependente(/*dependente cad_dependente[], dat_nasc_dependente dat_nasc_dependente[], int tamanho*/) {
+    cout << "Opção indisponível no momento!";
+/*    int procura_cpf;
 
     cout << "Insira o CPF do dependente com o qual deseja alterar os dados: ";
     cin >> procura_cpf;
@@ -556,7 +611,11 @@ void alterarDependente(dependente cad_dependente[], dat_nasc_dependente dat_nasc
         arquivo.close();
     } else {
         cout << "Dependente não encontrado.\n";
-    }
+    }*/
+}
+
+void excluirDependente() {
+    cout << "Opção indisponível no momento!";
 }
 
 void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_assos[], int tamanho, dat_nasc_visitante dat_nasc_visitante[]) {
@@ -620,7 +679,7 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
             cad_visitante[i].codigo_visitante = "V" + to_string(visitante::contadorVisitantes);
             cout << "Código do visitante: " << cad_visitante[i].codigo_visitante << " | ";
             arquivoVisitante << "Código: " << cad_visitante[i].codigo_visitante << "\n";
-            arquivoVisitante << "=================================================================================================================================================================================================================\n";
+            arquivoVisitante << "==============================================================================================================================================================================================\n";
 
             cout << "Visitante cadastrado com sucesso!";
 
@@ -645,7 +704,11 @@ void cadastroVisitante(visitante cad_visitante[], int &i, int &a, associado cad_
 }
 
 void alterarVisitante () {
-    cout << "Opção inválida no momento :)";
+    cout << "Opção indisponível no momento!";
+}
+
+void excluirVisitante() {
+    cout << "Opção indisponível no momento!";
 }
 
 string dependente::codExterno(int ano, int codigo) {
